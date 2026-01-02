@@ -75,9 +75,20 @@
                     <a href="#" class="nav-link">
                         <span class="text-xs font-medium">Debts</span>
                     </a>
-                    <a href="#" class="nav-link">
-                        <span class="text-xs font-medium">Settings</span>
-                    </a>
+                    <div class="pt-2 border-t border-white/10 mt-2 space-y-1">
+                        <a
+                            href="{{ route('settings.backup') }}"
+                            class="nav-link {{ request()->routeIs('settings.backup') ? 'nav-link-active' : '' }}"
+                        >
+                            <span class="text-xs font-medium">Backup &amp; Restore</span>
+                        </a>
+                        <a
+                            href="{{ route('settings.logs') }}"
+                            class="nav-link {{ request()->routeIs('settings.logs') ? 'nav-link-active' : '' }}"
+                        >
+                            <span class="text-xs font-medium">System Logs</span>
+                        </a>
+                    </div>
                 </nav>
 
                 <div class="mt-auto border-t border-white/10 px-4 py-4">
