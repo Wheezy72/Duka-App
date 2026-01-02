@@ -46,7 +46,7 @@ Once you choose a final icon, export:
 
 ## 3. Main features
 
-### 3.1 Data model and migrations
+### 2.1 Data model and migrations
 
 Tables:
 
@@ -64,7 +64,7 @@ Models:
 - `App\Models\Sale`
 - `App\Models\SaleItem`
 
-### 3.2 POS Service
+### 2.2 POS Service
 
 `App\Services\PosService`:
 
