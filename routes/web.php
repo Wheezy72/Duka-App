@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Services\PosService;
 use App\Models\Customer;
 use App\Models\Product;
+use App\Models\Sale;
 use Illuminate\Support\Facades\File;
 
 Route::redirect('/', '/dashboard');
@@ -89,6 +90,69 @@ Route::middleware(['auth'])->group(function () {
             'logs' => $logs,
         ]);
     })->name('settings.logs');
+
+    Route::get('/reports/sales', function (Request $request) {
+        $validated = $request->validate([
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date'],
+        ]);
+
+        $query = Sale::with(['user', 'customer'])->orderByDesc('created_at');
+
+        if (! empty($validated['from'])) {
+            $query->whereDate('created_at', '>=', $validated['from']);
+        }
+
+        if (! empty($validated['to'])) {
+            $query->whereDate('created_at', '<=', $validated['to']);
+        }
+
+        $sales = $query->get();
+
+        $headers = [
+            'Date',
+            'Time',
+            'Sale ID',
+            'User',
+            'Customer',
+            'Payment Method',
+            'Payment Status',
+            'Total Amount',
+        ];
+
+        $rows = $sales->map(function (Sale $sale): array {
+            return [
+                $sale->created_at->format('Y-m-d'),
+                $sale->created_at->format('H:i:s'),
+                (string) $sale->id,
+                $sale->user?->name ?? '',
+                $sale->customer?->name ?? '',
+                $sale->payment_method,
+                $sale->payment_status,
+                number_format((float) $sale->total_amount, 2, '.', ''),
+            ];
+        });
+
+        $callback = static function () use ($headers, $rows): void {
+            $handle = fopen('php://output', 'wb');
+
+            fputcsv($handle, $headers);
+
+            foreach ($rows as $row) {
+                fputcsv($handle, $row);
+            }
+
+            fclose($handle);
+        };
+
+        $fileName = 'duka-sales-' . now()->format('Y-m-d_H-i-s') . '.csv';
+
+        return response()->streamDownload($callback, $fileName, [
+            'Content-Type' => 'text/csv',
+        ]);
+    })->name('reports.sales');
+
+    Route::view('/settings/ai-chat', 'settings.ai-chat')->name('settings.ai-chat');
 });
 
 // Auth routes (to be wired with Breeze/Socialite in a full Laravel app)
