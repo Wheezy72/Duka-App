@@ -70,6 +70,8 @@ Route::middleware(['auth'])->group(function () {
             ->route('pos.terminal')
             ->with('status', 'Sale recorded successfully.');
     })->name('pos.checkout');
+
+    Route::view('/settings/backup', 'settings.backup')->name('settings.backup');
 });
 
 // Auth routes (to be wired with Breeze/Socialite in a full Laravel app)
