@@ -199,65 +199,89 @@ Behavior:
 
 Use case: build an installable folder for dukas and create a shortcut to `launcher.bat` (or a `.vbs` wrapper) as the main POS icon. From the shopkeeper’s perspective, they only double-click an icon.
 
-## 6. How to integrate into a full Laravel 11 app
+## 6. One-shot setup scripts (turn this repo into a full Laravel app)
 
-1. **Create Laravel app**
+These scripts assume:
 
-   ```bash
-   laravel new duka-app
-   cd duka-app
-   ```
+- You have **composer**, **PHP**, and **Node/npm** installed.
+- You created a folder `duka-app` and placed this repo directly inside it.
 
-2. **Install Breeze and Socialite**
+### 6.1 Windows: `setup_duka_app.bat`
 
-   ```bash
-   composer require laravel/breeze --dev
-   php artisan breeze:install blade
+From a terminal (cmd/PowerShell) in `duka-app`:
 
-   composer require laravel/socialite
-   php artisan migrate
-   npm install && npm run dev
-   ```
+```bat
+setup_duka_app.bat
+```
 
-3. **Copy this module**
+What it does:
 
-   From this repo into your Laravel app:
+1. Runs `composer create-project laravel/laravel temp-laravel-app`.
+2. Copies this repo's `app/`, `database/`, `resources/`, `routes/web.php`, `.env.example`, `dev_run.bat`, `launcher.bat`, and `dev_guide.md` into `temp-laravel-app`.
+3. Moves everything from `temp-laravel-app` back into `duka-app`.
+4. Deletes `temp-laravel-app`.
 
-   - `app/Models/{Product,Customer,Sale,SaleItem}.php`
-   - `app/Services/PosService.php`
-   - `database/migrations/*_create_{users,products,customers,sales,sale_items}_table.php` (merge with existing user migration as needed).
-   - `resources/views/layouts/app.blade.php` (or adapt into your layout).
-   - `resources/views/{auth,dashboard,pos,settings}`.
-   - `routes/web.php` POS + Settings + Reports routes (merge into your existing `web.php`).
-   - `app/Console/Commands/CloudBackupDatabase.php` and merge console kernel.
+Next steps after it finishes:
 
-4. **Configure auth & Socialite**
+```bash
+# From inside duka-app
+cp .env.example .env   # or copy via Explorer
+php artisan key:generate
+php artisan migrate --seed
+npm install
+dev_run.bat            # or: php artisan serve & npm run dev
+```
 
-   - Implement `Auth\GoogleController` (or equivalent) and routes:
+### 6.2 Unix/macOS: `setup_duka_app.sh`
 
-     ```php
-     Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('auth.google.redirect');
-     Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
-     ```
+From a terminal in `duka-app`:
 
-   - In `config/services.php`, set up Google.
-   - In `.env`, add `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`.
+```bash
+chmod +x setup_duka_app.sh
+./setup_duka_app.sh
+```
 
-5. **SQLite / DB configuration (for desktop)**
+It performs the same steps using `rsync`/`cp`.
 
-   - Set `DB_CONNECTION=sqlite` and `DB_DATABASE=database/database.sqlite` in `.env`.
-   - Create file:
+Afterwards, run:
 
-     ```bash
-     mkdir -p database
-     touch database/database.sqlite
-     php artisan migrate --force
-     ```
+```bash
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+npm install
+php artisan serve & npm run dev
+```
 
-6. **Assets**
+At this point `duka-app` becomes a full Laravel app with Duka-App features integrated and demo data seeded.
 
-   - Place logos and icons in `public/assets/`.
-   - Ensure `resources/css/app.css` and `resources/js/app.js` are wired with Tailwind, Alpine, and ApexCharts.
+## 7. Is the code complete?
+
+This module provides:
+
+- Migrations and models for all core entities.
+- Transactional POS service.
+- Midnight Glass layout.
+- POS terminal with Kupima, money mode, payment methods, and receipts.
+- Cinematic auth view integrated with Breeze routes (frontend).
+- Dashboard UI with chart hooks.
+- Settings for backup instructions, log viewing, and AI assistant UI.
+- Sales report CSV endpoint.
+- Cloud backup command.
+- Windows dev and launcher scripts.
+- Setup scripts (`setup_duka_app.bat`, `setup_duka_app.sh`) to bootstrap a full Laravel app.
+- Seeders (`DatabaseSeeder`, `DukaDemoSeeder`) with realistic Kenyan mini-mart data (products, customers, sales, credit scenarios).
+
+What you still need to add *inside the generated Laravel app*:
+
+- Actual Socialite Google auth controller and service configuration.
+- Dashboard controller that computes `$metrics` and `$charts`.
+- Full PWA/offline sync implementation (service worker, local queue, etc.).
+- Secure server-side AI integration (instead of direct browser call with API key).
+- Real M-PESA Daraja, bank gateway, and WhatsApp services and callbacks.
+- Packaging of PHP + Laravel + Nativefier into an installer or portable bundle.
+
+From a **feature skeleton** perspective, this module plus the setup scripts are complete and ready to be turned into a production-grade Duka-App in a real Laravel environment.
 
 ## 7. Is the code complete?
 
