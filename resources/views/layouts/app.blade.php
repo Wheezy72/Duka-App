@@ -83,7 +83,7 @@
                 <div class="mt-auto border-t border-white/10 px-4 py-4">
                     <div class="flex items-center space-x-3">
                         <div class="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center">
-                            <span class="text-[11px] font-semibold">{{ strtoupper(Str::substr(auth()->user()->name ?? 'DU', 0, 2)) }}</span>
+                            <span class="text-[11px] font-semibold">{{ strtoupper(\Illuminate\Support\Str::substr(auth()->user()->name ?? 'DU', 0, 2)) }}</span>
                         </div>
                         <div class="flex-1">
                             <p class="text-xs font-semibold leading-tight">{{ auth()->user()->name ?? 'Duka User' }}</p>
