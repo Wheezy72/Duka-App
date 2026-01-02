@@ -53,7 +53,7 @@ class DukaDemoSeeder extends Seeder
             return;
         }
 
-        $products = [
+        $baseProducts = [
             ['sku' => 'BREAD400', 'name' => 'Bread 400g', 'price' => 60.00, 'barcode' => '6160000000011', 'is_loose' => false],
             ['sku' => 'BREAD800', 'name' => 'Bread 800g', 'price' => 110.00, 'barcode' => '6160000000012', 'is_loose' => false],
             ['sku' => 'MILK500', 'name' => 'Milk 500ml', 'price' => 60.00, 'barcode' => '6160000000021', 'is_loose' => false],
@@ -76,15 +76,25 @@ class DukaDemoSeeder extends Seeder
             ['sku' => 'CEREAL', 'name' => 'Breakfast Cereal 375g', 'price' => 320.00, 'barcode' => '6160000000101', 'is_loose' => false],
         ];
 
-        foreach ($products as $data) {
-            Product::create([
-                'sku' => $data['sku'],
-                'barcode' => $data['barcode'],
-                'name' => $data['name'],
-                'is_loose' => $data['is_loose'],
-                'stock_quantity' => $data['is_loose'] ? 50.000 : 200.000,
-                'price' => $data['price'],
-            ]);
+        $counter = 1;
+
+        // Duplicate pattern with neighbourhood variations until we have 100+ products
+        while ($counter <= 5) {
+            foreach ($baseProducts as $data) {
+                $skuSuffix = $counter > 1 ? '-' . $counter : '';
+                $nameSuffix = $counter > 1 ? ' (' . $counter . ')' : '';
+
+                Product::create([
+                    'sku' => $data['sku'] . $skuSuffix,
+                    'barcode' => $data['barcode'],
+                    'name' => $data['name'] . $nameSuffix,
+                    'is_loose' => $data['is_loose'],
+                    'stock_quantity' => $data['is_loose'] ? 75.000 : 250.000,
+                    'price' => $data['price'],
+                ]);
+            }
+
+            $counter++;
         }
     }
 
@@ -105,6 +115,16 @@ class DukaDemoSeeder extends Seeder
             ['name' => 'Estate Canteen', 'phone' => '0722000008'],
             ['name' => 'Mama Wairimu', 'phone' => '0722000009'],
             ['name' => 'Otis Wines &amp; Spirits', 'phone' => '0722000010'],
+            ['name' => 'Mama Wamboi', 'phone' => '0722000011'],
+            ['name' => 'Maina Electronics', 'phone' => '0722000012'],
+            ['name' => 'Estate Salon', 'phone' => '0722000013'],
+            ['name' => 'Nyama Joint', 'phone' => '0722000014'],
+            ['name' => 'Boda Stage Kiosk', 'phone' => '0722000015'],
+            ['name' => 'Mama Mumbi', 'phone' => '0722000016'],
+            ['name' => 'Estate Butchery', 'phone' => '0722000017'],
+            ['name' => 'Mama Aisha', 'phone' => '0722000018'],
+            ['name' => 'Flat 3C Canteen', 'phone' => '0722000019'],
+            ['name' => 'Estate Bookshop', 'phone' => '0722000020'],
         ];
 
         foreach ($customers as $data) {
@@ -131,6 +151,9 @@ class DukaDemoSeeder extends Seeder
         }
 
         $paymentMethods = ['cash', 'mpesa', 'credit'];
+
+        // Seed 600+ sales over the last 30 days
+        for ($i = 0; $i &lt; 600; $i++) {= ['cash', 'mpesa', 'credit'];
 
         // Seed 120 sales over the last 30 days
         for ($i = 0; $i < 120; $i++) {
