@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Services\PosService;
 use App\Models\Customer;
 use App\Models\Product;
+use Illuminate\Support\Facades\File;
 
 Route::redirect('/', '/dashboard');
 
@@ -72,6 +73,22 @@ Route::middleware(['auth'])->group(function () {
     })->name('pos.checkout');
 
     Route::view('/settings/backup', 'settings.backup')->name('settings.backup');
+
+    Route::get('/settings/logs', function () {
+        $logFile = storage_path('logs/laravel.log');
+
+        $logs = '';
+
+        if (File::exists($logFile)) {
+            $contents = File::get($logFile);
+            $lines = explode(PHP_EOL, trim($contents));
+            $logs = implode(PHP_EOL, array_slice($lines, max(count($lines) - 200, 0)));
+        }
+
+        return view('settings.logs', [
+            'logs' => $logs,
+        ]);
+    })->name('settings.logs');
 });
 
 // Auth routes (to be wired with Breeze/Socialite in a full Laravel app)
