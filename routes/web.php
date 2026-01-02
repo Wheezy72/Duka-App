@@ -6,15 +6,35 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Services\PosService;
 use App\Models\Customer;
+use App\Models\Product;
 
-Route::get('/', function () {
-    return redirect()->route('dashboard');
-})->name('home');
+Route::redirect('/', '/dashboard');
+
+Route::middleware(['guest'])->group(function () {
+    Route::view('/login', 'auth.cinematic')->name('login');
+    Route::view('/register', 'auth.cinematic')->name('register');
+});
 
 Route::middleware(['auth'])->group(function () {
     Route::view('/dashboard', 'dashboard')->name('dashboard');
 
-    Route::view('/pos', 'pos.terminal')->name('pos.terminal');
+    Route::get('/pos', function () {
+        $products = Product::orderBy('name')->get();
+
+        $speedDialProducts = Product::whereIn('sku', [
+            'BREAD',
+            'MILK',
+            'AIRTIME',
+        ])->get();
+
+        $customers = \App\Models\Customer::orderBy('name')->get();
+
+        return view('pos.terminal', [
+            'products' => $products,
+            'speedDialProducts' => $speedDialProducts,
+            'customers' => $customers,
+        ]);
+    })->name('pos.terminal');
 
     Route::post('/pos/checkout', function (Request $request, PosService $posService) {
         $data = $request->validate([
@@ -52,4 +72,4 @@ Route::middleware(['auth'])->group(function () {
     })->name('pos.checkout');
 });
 
-require __DIR__ . '/auth.php';
+// Auth routes (to be wired with Breeze/Socialite in a full Laravel app)
