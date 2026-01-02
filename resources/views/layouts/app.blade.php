@@ -88,6 +88,12 @@
                         >
                             <span class="text-xs font-medium">System Logs</span>
                         </a>
+                        <a
+                            href="{{ route('settings.ai-chat') }}"
+                            class="nav-link {{ request()->routeIs('settings.ai-chat') ? 'nav-link-active' : '' }}"
+                        >
+                            <span class="text-xs font-medium">AI Assistant</span>
+                        </a>
                     </div>
                 </nav>
 

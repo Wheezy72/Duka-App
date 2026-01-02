@@ -4,15 +4,19 @@ This document explains what this repository contains, how to run it as a Laravel
 
 ## 1. What this is
 
-Duka-App is a **Midnight Glass** themed, offline-first POS feature set for Kenyan dukas, designed to be embedded into a Laravel 11 application.
+Duka-App is a **Midnight Glass** themed, offline-first POS feature set for Kenyan dukas.
+
+Right now, this repository is **a Laravel-style module**, not a complete Laravel application:
+
+- There is **no `composer.json`, no `artisan`, no `vendor/`**, and no `config/` directory.
+- The directory structure and code (routes, models, views, services) are written exactly as they would be inside a Laravel 11 app.
+- You are expected to create a full Laravel project and then drop these files in (see section 6).
 
 Key ideas:
 
 - **Complexity in the backend, simplicity in the frontend**.
 - Dark-mode POS terminal with glassmorphism and micro-interactions.
 - SQLite-friendly and suitable for bundling with a portable PHP runtime and Nativefier into a desktop app.
-
-This repo is **not** a full Laravel framework install (no `artisan`, `composer.json`, etc.). It is a feature module you can drop into a real Laravel project.
 
 ## 2. Main features
 
@@ -157,7 +161,23 @@ Defined in `routes/web.php`:
 
 In a real Laravel app, merge this into the existing `App\Console\Kernel` rather than replacing it.
 
-## 5. Launcher script (desktop bundle)
+## 5. Dev and launcher scripts
+
+### 5.1 Dev script (for debugging in a full Laravel app)
+
+`dev_run.bat` at repo root is intended to be copied into a *real* Laravel project root (where `artisan` lives). It:
+
+1. Sets `APP_ENV=local`, `APP_DEBUG=true`.
+2. Runs `npm run dev` in a separate window (Vite).
+3. Runs `php artisan serve --host=127.0.0.1 --port=8000`.
+
+This gives you a fast development loop:
+
+- Run `dev_run.bat`.
+- Open `http://127.0.0.1:8000` in your browser.
+- Edit Blade, Tailwind classes, Alpine behavior, etc. and see changes live.
+
+### 5.2 Launcher script (desktop bundle)
 
 `launcher.bat` at repo root (intended for a Windows bundle layout):
 
@@ -177,7 +197,7 @@ Behavior:
    - If `desktop/Duka-App.exe` exists, starts it.
    - Else, opens `http://127.0.0.1:8080` in the default browser.
 
-Use case: build an installable folder for dukas and create a shortcut to `launcher.bat` (or a `.vbs` wrapper) as the main POS icon.
+Use case: build an installable folder for dukas and create a shortcut to `launcher.bat` (or a `.vbs` wrapper) as the main POS icon. From the shopkeeper’s perspective, they only double-click an icon.
 
 ## 6. How to integrate into a full Laravel 11 app
 
