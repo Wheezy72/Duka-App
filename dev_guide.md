@@ -46,7 +46,7 @@ Once you choose a final icon, export:
 
 ## 3. Main features
 
-### 2.1 Data model and migrations
+### 3.1 Data model and migrations
 
 Tables:
 
@@ -64,7 +64,7 @@ Models:
 - `App\Models\Sale`
 - `App\Models\SaleItem`
 
-### 2.2 POS Service
+### 3.2 POS Service
 
 `App\Services\PosService`:
 
@@ -77,7 +77,9 @@ Models:
   - Decrementing inventory atomically.
   - Updating `customers.total_debt` for credit sales.
 
-### 2.3 UI Layout (Midnight Glass)
+## 3. Main features
+
+### 3.1 Data model and migrations
 
 `resources/views/layouts/app.blade.php`:
 
@@ -93,53 +95,24 @@ Models:
 - Toast notifications:
   - Slide-in from top-right using Alpine transitions.
 
-### 3.4 POS Terminal
+### 2.4 POS Terminal
 
 `resources/views/pos/terminal.blade.php`:
 
 - Split layout:
   - Left: product search, speed dial items, product grid.
   - Right: cart and checkout.
-- Live search:
-  - Single search box for barcode or name.
-  - As the cashier types, the product grid filters in real-time (debounced) by name, SKU, or barcode.
-  - If exactly one product matches and the cashier presses Enter, it is added to the cart immediately.
-- Barcode scanner flow:
-  - A USB scanner acts like a fast keyboard: scans a barcode, hits Enter.
-  - The search box picks up the scanned code, filters down to the matching product, and adds it straight to the cart.
+- Search:
+  - Keyboard/barcode input (Enter to add when single match).
 - Speed dial:
   - Quick tap buttons for high-volume items (e.g., Bread, Milk, Airtime).
-  - Allows fast one-tap adding for the most common products.
-- Kupima (loose items + “avocado” edge case):
-  - Some items like sugar, rice, cooking oil, or avocados may have no barcode and are sold by weight or piece.
-  - If a cashier selects a loose product (no barcode, `is_loose = true`), the Kupima modal opens:
-    - Quick weights: 1/4 KG, 1/2 KG, 1 KG buttons.
-    - Money mode: cashier enters the customer’s spend (e.g., “50” KES for avocado), the system converts that amount to quantity using the configured price.
-  - This flow covers the “avocado” edge case where there is no scan, but the item must still be captured accurately by weight or value.
+- Kupima:
+  - Modal for loose items with 1/4, 1/2, 1 KG shortcuts.
+  - Money mode: amount in KES → fractional quantity using product price.
 - Checkout:
   - Payment cards: Cash, M-PESA (STK simulation), Credit (Deni).
   - Credit reveals customer dropdown.
   - Receipt printing with 58mm layout and `window.print()` via iframe.
-
-### 3.5 Counter workflow (real-world simulation)
-
-A typical sale workflow:
-
-1. Customer walks to the counter with their items.
-2. The cashier:
-   - Scans barcoded items (milk, bread, soda) with a scanner; they enter the cart automatically.
-   - Types product names when no barcode is available and picks suggestions from the filtered grid.
-   - For loose items (e.g., sugar, avocado):
-     - Selects the loose product in the grid.
-     - Uses Kupima to choose a fixed weight (1/4, 1/2, 1 KG) or enters the amount of money the customer wants to spend and lets the app compute the quantity.
-3. The cart shows all items, quantities, and live totals.
-4. The cashier selects a payment method:
-   - CASH: marks sale as paid.
-   - M-PESA: simulates an STK push flow in the UI (in a real app, the Daraja integration would be called here).
-   - CREDIT (DENI): requires selecting a customer; the sale is marked as pending and added to that customer’s debt.
-5. After confirming, the sale is persisted, stock is updated, debts are adjusted, and a small receipt-style view is printed.
-
-This is the core “mini-mart counter” scenario the app is designed to demonstrate.
 
 ### 2.5 Auth and Dashboard
 
@@ -310,38 +283,14 @@ php artisan serve & npm run dev
 
 At this point `duka-app` becomes a full Laravel app with Duka-App features integrated and demo data seeded.
 
-## 7. Internal logging and session behaviour
-
-Out of the box, once integrated into a full Laravel app, you get:
-
-- **Application logs**:
-  - Standard Laravel logging to `storage/logs/laravel.log`.
-  - The `/settings/logs` screen reads from this file and shows the tail (last ~200 lines) for quick debugging.
-- **Sales and debt history**:
-  - Every checkout creates a `Sale` with timestamps, payment method, and linked user/customer.
-  - `SaleItem` entries show exactly what was sold, in what quantities, and at what prices.
-  - Credit transactions update `Customer.total_debt`, so outstanding deni is always visible.
-
-The module does **not** currently include:
-
-- A dedicated time-clock or “user clock-in/clock-out” feature with explicit entry/exit logs per shift.
-- Audit trails beyond what is implicit in `sales` (who recorded which sale and when).
-
-If you need shift-level logging (e.g., when a cashier started and ended their shift, total float, variance), you can extend:
-
-- Add a `shifts` table with `user_id`, `opened_at`, `closed_at`, `opening_float`, `closing_float`, `notes`.
-- Show an “Open Shift / Close Shift” UI in the POS and use it to drive daily reconciliation.
-
-These are deliberate omissions to keep the core POS lean; they can be added without changing the existing POS flow.
-
-## 8. Is the code complete?
+## 7. Is the code complete?
 
 This module provides:
 
 - Migrations and models for all core entities.
 - Transactional POS service.
 - Midnight Glass layout.
-- POS terminal with live search, Kupima, money mode, payment methods, and receipts.
+- POS terminal with Kupima, money mode, payment methods, and receipts.
 - Cinematic auth view integrated with Breeze routes (frontend).
 - Dashboard UI with chart hooks.
 - Settings for backup instructions, log viewing, and AI assistant UI.
@@ -349,7 +298,7 @@ This module provides:
 - Cloud backup command.
 - Windows dev and launcher scripts.
 - Setup scripts (`setup_duka_app.bat`, `setup_duka_app.sh`) to bootstrap a full Laravel app.
-- Seeders (`DatabaseSeeder`, `DukaDemoSeeder`) with expanded, realistic Kenyan mini-mart data (100+ products, 600+ sales, varied customers and payment conditions).
+- Seeders (`DatabaseSeeder`, `DukaDemoSeeder`) with realistic Kenyan mini-mart data (products, customers, sales, credit scenarios).
 
 What you still need to add *inside the generated Laravel app*:
 
@@ -358,10 +307,9 @@ What you still need to add *inside the generated Laravel app*:
 - Full PWA/offline sync implementation (service worker, local queue, etc.).
 - Secure server-side AI integration (instead of direct browser call with API key).
 - Real M-PESA Daraja, bank gateway, and WhatsApp services and callbacks.
-- (Optional) Shift/attendance logging if you want explicit “user entering/leaving time”.
 - Packaging of PHP + Laravel + Nativefier into an installer or portable bundle.
 
-From a **feature skeleton** and demo-data perspective, this module plus the setup scripts are now complete and ready to be turned into a production-grade Duka-App in a real Laravel environment.
+From a **feature skeleton** perspective, this module plus the setup scripts are complete and ready to be turned into a production-grade Duka-App in a real Laravel environment.
 
 ## 7. Is the code complete?
 
